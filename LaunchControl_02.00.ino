@@ -3,7 +3,7 @@
 #include "HX711.h"
 
 const char* ssid     = "YammiesESP";
-const char* password = "Buster01";
+const char* password = "*********"; // Replace for use.
 String header;
 
 const int LOADCELL_DOUT_PIN = 2;
