@@ -1,13 +1,13 @@
-//LaunchControl_02.00
+//LaunchControl_02.03
 #include <WiFi.h>
 #include "HX711.h"
 
 const char* ssid     = "YammiesESP";
-const char* password = "*********"; // Replace for use.
+const char* password = "Buster01";
 String header;
 
-const int LOADCELL_DOUT_PIN = 2;
-const int LOADCELL_SCK_PIN = 15;
+const int LOADCELL_DOUT_PIN = 18;
+const int LOADCELL_SCK_PIN = 19;
 
 bool staticTest = true;
 bool Safety_1 = true;
@@ -17,13 +17,14 @@ int IGN = 25;
 unsigned long timeCounter = 0;
 unsigned long timeInstance = 0;
 
-long int force = 0;
-long int delta = 0;
-long int cal_Factor;
-long int calF;
-long int calT;
+float force = 0;
+float delta = 0;
+float cal_Factor;
+float adjustment_Newtons = 0.02802/3.9;
+float calF;
+float calT;
 long int i;
-int downstep = 200;
+int downstep = 50;
 int failCount = 0;
 
 HX711 scale;
@@ -129,7 +130,7 @@ void loop(){
               digitalWrite(IGN,HIGH);
               while(true){
                 timeCounter = millis();
-                if(timeCounter >= timeInstance + 3000){
+                if(timeCounter >= timeInstance + 5000){
                   digitalWrite(IGN,LOW);
                   Launch = false;
                   Safety_1 = true, Safety_2 = true;
@@ -147,7 +148,7 @@ void loop(){
               client.println("Static Launch");
               while(true){
                 timeCounter = millis();
-                force = ((scale.read()/downstep) - cal_Factor);
+                force = ((scale.read()/downstep) - cal_Factor)*adjustment_Newtons;
                 client.println(force);
                 if(timeCounter >= timeInstance + 10000){
                   digitalWrite(IGN,LOW);
@@ -157,7 +158,7 @@ void loop(){
                   //client.print("<meta http-equiv=\"refresh\" content=\"0;url=/\">");
                   //client.print("</head>");
                   break;
-                } 
+                  } 
                 else{}
               }
             }
@@ -199,10 +200,10 @@ void loop(){
     client.stop();
   }
 }
-int scaleCal(){
+float scaleCal(){
   calF = 0;
   i = 0;
-  while(i < 20 or failCount < 50){
+  while(i < 100 or failCount < 50){
     if (scale.is_ready()) {
       calT = scale.read()/downstep;
       calF = calT + calF;
